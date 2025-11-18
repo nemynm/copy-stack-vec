@@ -1,0 +1,13 @@
+# Build
+/target
+
+# Dev
+/.cargo/config.toml
+tests/coverage
+
+# Cargo
+Cargo.lock
+
+# IDE
+.idea
+.vscode

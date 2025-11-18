@@ -1,0 +1,33 @@
+[package]
+name = "copy-stack-vec"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+license = "MIT OR Apache-2.0"
+authors = ["nemynm"]
+description = "A no_std, fixed-capacity, stack-allocated Copy vector for Copy types, with no unsafe code by default."
+readme = "README.md"
+documentation = "https://docs.rs/copy-stack-vec"
+homepage = "https://github.com/nemynm/copy-stack-vec"
+repository = "https://github.com/nemynm/copy-stack-vec"
+keywords = ["no_std", "stack", "vector", "copy", "embedded"]
+categories = ["data-structures", "no-std"]
+
+
+[features]
+default = []
+serde = ["dep:serde"]
+unsafe-maybe-uninit = []
+
+[dependencies]
+serde = { version = "1", default-features = false, features = ["derive"], optional = true }
+
+[dev-dependencies]
+serde_json = "1"
+
+[profile.release]
+strip = true
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"

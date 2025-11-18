@@ -1,0 +1,35 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: rustfmt + clippy (stable)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust (stable) with components
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-all-crates: true
+
+      - name: Show rustc version
+        run: rustc -V
+
+      - name: rustfmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy (all targets, all features)
+        run: cargo clippy --all-targets --all-features -- -D warnings
