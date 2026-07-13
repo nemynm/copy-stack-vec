@@ -52,10 +52,14 @@ impl<'a, T: Copy, const N: usize> FusedIterator for Drain<'a, T, N> {}
 impl<T: Copy + Default, const N: usize> CopyStackVec<T, N> {
     /// Drains the specified range of elements and returns them as an iterator.
     ///
-    /// The elements in `range` are removed immediately and yielded by value.
-    /// The tail of the vector is shifted left to fill the gap.
+    /// The elements are copied into a temporary buffer, and the remaining tail is
+    /// shifted left before this method returns.
     ///
-    /// This follows the same semantics as [`Vec::drain`]:
+    /// Range validation, yielded order, and final contents match [`Vec::drain`]
+    /// during normal use.
+    ///
+    /// Unlike [`Vec::drain`], removal is eager, so forgetting the iterator does not
+    /// affect the resulting contents of `self`.
     ///
     /// # Panics
     ///

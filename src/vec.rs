@@ -1047,6 +1047,20 @@ mod tests {
     }
 
     #[test]
+    fn test_drain_updates_parent_eagerly() {
+        use core::mem;
+
+        let mut v: CopyStackVec<i32, 4> = [1, 2, 3, 4].into();
+
+        {
+            let drain = v.drain(1..3);
+            mem::forget(drain);
+        }
+
+        assert_eq!(v.as_slice(), &[1, 4]);
+    }
+
+    #[test]
     fn test_first_and_last_mut() {
         let mut v: CopyStackVec<i32, 4> = CopyStackVec::try_from(&[1, 2, 3][..]).unwrap();
 
