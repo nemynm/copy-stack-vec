@@ -1377,8 +1377,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "drain range end overflow")]
     fn test_drain_included_end_usize_max_panics() {
-        let mut v: CopyStackVec<i32, 4> =
-            CopyStackVec::try_from(&[1, 2, 3][..]).unwrap();
+        let mut v: CopyStackVec<i32, 4> = CopyStackVec::try_from(&[1, 2, 3][..]).unwrap();
 
         let _ = v.drain(..=usize::MAX);
     }
@@ -1388,12 +1387,8 @@ mod tests {
     fn test_drain_excluded_start_usize_max_panics() {
         use core::ops::Bound;
 
-        let mut v: CopyStackVec<i32, 4> =
-            CopyStackVec::try_from(&[1, 2, 3][..]).unwrap();
+        let mut v: CopyStackVec<i32, 4> = CopyStackVec::try_from(&[1, 2, 3][..]).unwrap();
 
-        let _ = v.drain((
-            Bound::Excluded(usize::MAX),
-            Bound::Unbounded,
-        ));
+        let _ = v.drain((Bound::Excluded(usize::MAX), Bound::Unbounded));
     }
 }
