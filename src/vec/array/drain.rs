@@ -84,11 +84,11 @@ impl<T: Copy + Default, const N: usize> CopyStackVec<T, N> {
 
         let start = match range.start_bound() {
             Bound::Included(&i) => i,
-            Bound::Excluded(&i) => i + 1,
+            Bound::Excluded(&i) => i.checked_add(1).expect("drain range start overflow"),
             Bound::Unbounded => 0,
         };
         let end = match range.end_bound() {
-            Bound::Included(&i) => i + 1,
+            Bound::Included(&i) => i.checked_add(1).expect("drain range end overflow"),
             Bound::Excluded(&i) => i,
             Bound::Unbounded => len,
         };
