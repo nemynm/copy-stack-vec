@@ -1,0 +1,10 @@
+[unstable]
+profile-rustflags = true
+
+[profile.grcov]
+inherits = "test"
+incremental = false
+rustflags = [
+    "-Cinstrument-coverage",
+    "-Zcoverage-options=branch",
+]
