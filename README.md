@@ -1,5 +1,11 @@
 # copy-stack-vec
 
+[![Crates.io](https://img.shields.io/crates/v/copy-stack-vec)](https://crates.io/crates/copy-stack-vec)
+[![Documentation](https://docs.rs/copy-stack-vec/badge.svg)](https://docs.rs/copy-stack-vec)
+[![MSRV](https://img.shields.io/crates/msrv/copy-stack-vec)](https://crates.io/crates/copy-stack-vec)
+[![tests](https://github.com/nemynm/copy-stack-vec/actions/workflows/ci.yml/badge.svg)](https://github.com/nemynm/copy-stack-vec/actions/workflows/ci.yml)
+![Coverage](/../coverage/coverage.svg)
+
 A `no_std`, fixed-capacity, stack-allocated vector type for `Copy` elements, **with no unsafe code by default**.
 
 `CopyStackVec<T, N>` stores up to `N` elements inline and provides familiar slice/Vec-like ergonomics without heap

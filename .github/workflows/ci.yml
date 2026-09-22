@@ -49,14 +49,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Install Rust ${{ matrix.rust }}
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
 
-      - uses: Swatinem/rust-cache@v2
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
         with:
           cache-all-crates: true
 
@@ -67,3 +68,119 @@ jobs:
         run: |
           cargo test ${{ matrix.features }} --verbose
           cargo test ${{ matrix.features }} --doc --verbose
+
+  coverage:
+    name: Test (all-features + coverage)
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    env:
+      CARGO_INCREMENTAL: "0"
+      CARGO_TARGET_DIR: "${{ github.workspace }}/target/grcov"
+      LLVM_PROFILE_FILE: "${{ github.workspace }}/tests/coverage/profraw/%p-%m.profraw"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install nightly Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: llvm-tools-preview
+
+      - name: Install grcov
+        uses: taiki-e/install-action@grcov
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: coverage
+
+      - name: Prepare coverage directories
+        run: |
+          mkdir -p tests/coverage/profraw
+          mkdir -p tests/coverage/results
+
+      - name: Run instrumented tests
+        run: |
+          cargo +nightly test \
+            --workspace \
+            --all-features \
+            --profile grcov
+
+      - name: Verify coverage data
+        shell: bash
+        run: |
+          count="$(
+            find tests/coverage/profraw \
+              -type f \
+              -name '*.profraw' \
+              | wc -l
+          )"
+
+          echo "Found ${count} profraw files"
+
+          if [ "$count" -eq 0 ]; then
+            echo "No profraw files were generated"
+            exit 1
+          fi
+
+      - name: Generate coverage reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          grcov tests/coverage/profraw/ \
+            --binary-path target/grcov \
+            -s . \
+            -t html,lcov \
+            --branch \
+            --excl-line LCOV_EXCL_LINE \
+            --excl-start LCOV_EXCL_START \
+            --excl-stop LCOV_EXCL_STOP \
+            --ignore-not-existing \
+            --ignore "tests/*" \
+            --ignore "examples/*" \
+            -o tests/coverage/results/
+          
+          test -s tests/coverage/results/lcov
+          test -s tests/coverage/results/html/badges/flat.svg
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: tests/coverage/results/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Publish coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BADGE: ${{ github.workspace }}/tests/coverage/results/html/badges/flat.svg
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          tmp="$(mktemp -d)"
+          cp "$BADGE" "$tmp/coverage.svg"
+          
+          cd "$tmp"
+          
+          git init
+          git checkout --orphan coverage
+          
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git add coverage.svg
+          git commit -m "Update coverage badge"
+          
+          git remote add origin \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          
+          git push --force origin coverage

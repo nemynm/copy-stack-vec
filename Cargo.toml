@@ -13,7 +13,6 @@ repository = "https://github.com/nemynm/copy-stack-vec"
 keywords = ["no_std", "stack", "vector", "copy", "embedded"]
 categories = ["data-structures", "no-std"]
 
-
 [features]
 default = []
 serde = ["dep:serde"]
